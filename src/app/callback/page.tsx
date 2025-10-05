@@ -10,21 +10,29 @@ function CallbackContent() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      const supabase = createBrowserClient();
       const code = searchParams.get('code');
-      
+
       if (code) {
-        const supabase = createBrowserClient();
-        
-        // Exchange code for session
+        // OAuth flow - exchange code for session
         const { error } = await supabase.auth.exchangeCodeForSession(code);
-        
+
         if (error) {
           console.error('Error exchanging code:', error);
           router.push('/login?error=auth_failed');
           return;
         }
+      } else {
+        // Magic link flow - verify session was created
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (error || !session) {
+          console.error('Error verifying session:', error);
+          router.push('/login?error=auth_failed');
+          return;
+        }
       }
-      
+
       // Redirect to home
       router.push('/');
     };
