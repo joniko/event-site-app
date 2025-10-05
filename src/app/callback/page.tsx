@@ -9,7 +9,7 @@ const LoadingScreen = () => (
     <div className="text-center">
       <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
       <p className="text-gray-600 dark:text-gray-400">
-        Completando inicio de sesión...
+        Verificando tu sesión...
       </p>
     </div>
   </div>
@@ -21,30 +21,53 @@ function CallbackContent() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      const supabase = createBrowserClient();
+      
+      // Get all URL params that Supabase might send
+      const token_hash = searchParams.get('token_hash');
+      const type = searchParams.get('type');
       const code = searchParams.get('code');
 
-      if (!code) {
-        router.replace('/login');
-        return;
-      }
-
-      const supabase = createBrowserClient();
-
       try {
-        // Client has access to code_verifier in localStorage
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        // Magic Link flow (has token_hash and type)
+        if (token_hash && type) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash,
+            type: type as 'email' | 'signup' | 'invite' | 'magiclink' | 'recovery' | 'email_change',
+          });
 
-        if (error) {
-          console.error('Error exchanging code:', error);
-          router.replace('/login?error=auth_failed');
-          return;
+          if (error) {
+            console.error('Error verifying OTP:', error);
+            router.push('/login?error=invalid_link');
+            return;
+          }
+        }
+        // OAuth/PKCE flow (has code)
+        else if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+          if (error) {
+            console.error('Error exchanging code:', error);
+            router.push('/login?error=auth_failed');
+            return;
+          }
+        }
+        // No params - check if session exists
+        else {
+          const { data: { session }, error } = await supabase.auth.getSession();
+
+          if (error || !session) {
+            console.error('No session found:', error);
+            router.push('/login?error=no_session');
+            return;
+          }
         }
 
         // Success - redirect to home
-        router.replace('/');
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        router.replace('/login?error=unexpected');
+        router.push('/');
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        router.push('/login?error=unexpected');
       }
     };
 
