@@ -16,9 +16,15 @@ export default function LoginPage() {
     try {
       await signInWithMagicLink(email);
       setMessage('¡Revisa tu email! Te enviamos un link mágico para iniciar sesión.');
-    } catch (error) {
-      setMessage('Error al enviar el email. Intenta nuevamente.');
-      console.error(error);
+    } catch (error: any) {
+      console.error('Magic link error:', error);
+      
+      // Handle rate limiting
+      if (error?.message?.includes('after') || error?.message?.includes('seconds')) {
+        setMessage('Debes esperar 60 segundos antes de solicitar otro link.');
+      } else {
+        setMessage('Error al enviar el email. Intenta nuevamente.');
+      }
     } finally {
       setLoading(false);
     }
