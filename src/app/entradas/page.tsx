@@ -5,13 +5,31 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/auth';
 import type { User } from '@supabase/supabase-js';
 import type { Ticket } from '@/lib/fint';
+import EditTicketModal from '@/components/EditTicketModal';
 
 export default function EntradasPage() {
   const [user, setUser] = useState<User | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const router = useRouter();
+
+  const fetchTickets = async () => {
+    try {
+      const response = await fetch('/api/tickets');
+      if (!response.ok) {
+        throw new Error('Error al cargar las entradas');
+      }
+
+      const data = await response.json();
+      setTickets(data.tickets || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const supabase = createBrowserClient();
@@ -24,23 +42,15 @@ export default function EntradasPage() {
       }
 
       setUser(session.user);
-
-      // Fetch tickets
-      try {
-        const response = await fetch('/api/tickets');
-        if (!response.ok) {
-          throw new Error('Error al cargar las entradas');
-        }
-
-        const data = await response.json();
-        setTickets(data.tickets || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setLoading(false);
-      }
+      await fetchTickets();
     });
   }, [router]);
+
+  const handleEditSuccess = () => {
+    setEditingTicket(null);
+    setLoading(true);
+    fetchTickets();
+  };
 
   if (loading) {
     return (
@@ -102,89 +112,111 @@ export default function EntradasPage() {
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tickets.map((ticket) => (
           <div
             key={ticket.externalId}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-lg transition"
+            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-lg transition"
           >
-            {/* Header */}
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="font-bold text-lg mb-1">{ticket.eventName}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {ticket.firstName} {ticket.lastName}
-                </p>
+            {/* QR Code Section */}
+            {ticket.qrUrl && (
+              <div className="bg-white p-6 flex items-center justify-center border-b border-gray-200 dark:border-gray-700">
+                <img
+                  src={ticket.qrUrl}
+                  alt={`QR Code para ${ticket.eventName}`}
+                  className="w-full max-w-[200px] h-auto"
+                />
               </div>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  ticket.status === 'paid'
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                }`}
-              >
-                {ticket.status}
-              </span>
-            </div>
-
-            {/* Item name */}
-            {ticket.itemName && (
-              <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
-                {ticket.itemName}
-              </p>
             )}
 
-            {/* Details */}
-            <div className="space-y-2 text-sm mb-4">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Referencia:</span>
-                <span className="font-mono font-semibold">{ticket.reference}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Monto:</span>
-                <span className="font-semibold">${ticket.amount}</span>
-              </div>
-              {ticket.purchaseReference && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Compra:</span>
-                  <span className="font-mono text-xs">{ticket.purchaseReference}</span>
+            {/* Content Section */}
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1 pr-2">
+                  <h3 className="font-bold text-lg mb-1 line-clamp-2">{ticket.eventName}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {ticket.firstName} {ticket.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    {ticket.userEmail}
+                  </p>
                 </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3">
-              {ticket.qrUrl && (
-                <a
-                  href={ticket.qrUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-center rounded-lg transition text-sm font-semibold"
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
+                    ticket.status === 'paid'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                  }`}
                 >
-                  Ver QR
-                </a>
+                  {ticket.status}
+                </span>
+              </div>
+
+              {/* Item name */}
+              {ticket.itemName && (
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-3 font-semibold">
+                  {ticket.itemName}
+                </p>
               )}
-              {ticket.pdfUrl && (
-                <a
-                  href={ticket.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+
+              {/* Details */}
+              <div className="space-y-2 text-sm mb-4">
+              {ticket.purchaseReference && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Orden:</span>
+                    <span className="font-mono text-xs">{ticket.purchaseReference}</span>
+                  </div>
+                )}
+                
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">Referencia:</span>
+                  <span className="font-mono font-semibold text-xs">{ticket.reference}</span>
+                </div>
+
+
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setEditingTicket(ticket)}
                   className="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-center rounded-lg transition text-sm font-semibold"
                 >
-                  Ver PDF
-                </a>
+                  ✏️ Editar
+                </button>
+                {ticket.pdfUrl && (
+                  <a
+                    href={ticket.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-center rounded-lg transition text-sm font-semibold"
+                  >
+                    📄 PDF
+                  </a>
+                )}
+              </div>
+
+              {/* Buyer info (if different from attendee) */}
+              {ticket.buyerEmail && ticket.buyerEmail !== ticket.userEmail && (
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  Comprado por: {ticket.buyerEmail}
+                </p>
               )}
             </div>
-
-            {/* Buyer info (if different from attendee) */}
-            {ticket.buyerEmail && ticket.buyerEmail !== ticket.userEmail && (
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                Comprado por: {ticket.buyerEmail}
-              </p>
-            )}
           </div>
         ))}
       </div>
+
+      {/* Edit Modal */}
+      {editingTicket && (
+        <EditTicketModal
+          ticket={editingTicket}
+          isOpen={!!editingTicket}
+          onClose={() => setEditingTicket(null)}
+          onSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   );
 }

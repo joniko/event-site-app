@@ -294,6 +294,59 @@ export async function fetchAllUserTickets(email: string): Promise<Omit<Ticket, '
 }
 
 /**
+ * Update ticket data by reference
+ * 
+ * @param reference - Ticket reference
+ * @param data - Data to update (firstName, lastName, email, document, status)
+ * @returns Updated ticket data
+ */
+export async function updateTicketByReference(
+  reference: string,
+  data: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    document?: string;
+    status?: 'ADMITTED' | 'PENDING' | 'REJECTED';
+    customFieldResponses?: Array<{
+      id?: number;
+      customFieldId: number;
+      value: string;
+    }>;
+  }
+): Promise<any> {
+  const url = `${process.env.FINT_API_BASE_URL}/event/ticket/reference/${encodeURIComponent(reference)}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'x-api-key': process.env.FINT_API_KEY!,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new FintAPIError(
+        response.status,
+        `Failed to update ticket: ${response.status} ${response.statusText} - ${errorText}`
+      );
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error('Fint update ticket error:', {
+      reference,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    throw error;
+  }
+}
+
+/**
  * Error class for Fint API errors
  */
 export class FintAPIError extends Error {
