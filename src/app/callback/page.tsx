@@ -1,21 +1,54 @@
 'use client';
 
 import { useEffect, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { createBrowserClient } from '@/lib/auth';
 
 function CallbackContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    // This is a legacy callback URL
-    // Redirect to the new auth callback route that handles everything server-side
-    const hash = window.location.hash;
-    const search = window.location.search;
-    
-    // Preserve all URL parameters and hash
-    const newUrl = `/auth/callback${search}${hash}`;
-    router.replace(newUrl);
-  }, [router]);
+    const handleCallback = async () => {
+      const code = searchParams.get('code');
+      const error = searchParams.get('error');
+      const error_description = searchParams.get('error_description');
+
+      // Handle error from Supabase
+      if (error) {
+        console.error('Auth error:', error, error_description);
+        router.push(`/login?error=${error}`);
+        return;
+      }
+
+      // Handle PKCE flow with code
+      if (code) {
+        const supabase = createBrowserClient();
+
+        try {
+          // Exchange code for session - client has access to code_verifier
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+
+          if (exchangeError) {
+            console.error('Error exchanging code for session:', exchangeError);
+            router.push('/login?error=auth_failed');
+            return;
+          }
+
+          // Success! Redirect to home
+          router.push('/');
+        } catch (err) {
+          console.error('Unexpected error during auth:', err);
+          router.push('/login?error=unexpected');
+        }
+      } else {
+        // No code in URL, redirect to login
+        router.push('/login');
+      }
+    };
+
+    handleCallback();
+  }, [router, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
