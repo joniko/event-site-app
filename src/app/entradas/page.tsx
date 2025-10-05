@@ -3,13 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/auth';
-import type { User } from '@supabase/supabase-js';
 import type { Ticket } from '@/lib/fint';
 import EditTicketModal from '@/components/EditTicketModal';
 import TopBar from '@/components/TopBar';
 
 export default function EntradasPage() {
-  const [user, setUser] = useState<User | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +41,6 @@ export default function EntradasPage() {
         return;
       }
 
-      setUser(session.user);
       await fetchTickets();
     });
   }, [router]);
@@ -54,11 +51,17 @@ export default function EntradasPage() {
     fetchTickets(true); // Force fresh data from Fint API
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <TopBar title="Mis Entradas" showBack />
-        <div className="container mx-auto px-4 py-6">
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <TopBar
+        title="Mis Entradas"
+        subtitle={loading ? undefined : tickets.length > 0 ? `${tickets.length} ${tickets.length === 1 ? 'entrada' : 'entradas'}` : undefined}
+        showBack
+        largeTitle
+      />
+
+      <div className="container mx-auto px-4 py-6">
+        {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
               <div
@@ -67,32 +70,14 @@ export default function EntradasPage() {
               />
             ))}
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <TopBar title="Mis Entradas" showBack />
-        <div className="container mx-auto px-4 py-6">
+        ) : error ? (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
             <h2 className="font-semibold text-red-800 dark:text-red-200 mb-2">
               Error al cargar entradas
             </h2>
             <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (tickets.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <TopBar title="Mis Entradas" showBack />
-        <div className="container mx-auto px-4 py-6">
+        ) : tickets.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🎫</div>
             <h2 className="text-xl font-semibold mb-2">No tienes entradas</h2>
@@ -106,23 +91,9 @@ export default function EntradasPage() {
               Volver al inicio
             </button>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <TopBar
-        title="Mis Entradas"
-        subtitle={`${tickets.length} ${tickets.length === 1 ? 'entrada' : 'entradas'}`}
-        showBack
-        largeTitle
-      />
-
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tickets.map((ticket) => (
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {tickets.map((ticket) => (
           <div
             key={ticket.externalId}
             className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-lg transition"
@@ -219,8 +190,9 @@ export default function EntradasPage() {
               )}
             </div>
           </div>
-        ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Edit Modal */}

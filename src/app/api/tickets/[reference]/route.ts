@@ -9,8 +9,9 @@ const supabase = createClient(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { reference: string } }
+  { params }: { params: Promise<{ reference: string }> }
 ) {
+  const { reference } = await params;
   try {
     // Verify authentication
     const authHeader = request.headers.get('authorization');
@@ -41,7 +42,7 @@ export async function PUT(
     }
 
     // Update ticket via Fint API
-    const updatedTicket = await updateTicketByReference(params.reference, {
+    const updatedTicket = await updateTicketByReference(reference, {
       firstName,
       lastName,
       email,

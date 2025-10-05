@@ -13,8 +13,8 @@ Guía paso a paso para configurar el proyecto desde cero.
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/yourusername/nextjs-pwa.git
-cd nextjs-pwa
+git clone https://github.com/yourusername/conferencia-app.git
+cd conferencia-app
 
 # Instalar dependencias
 npm install --legacy-peer-deps
@@ -89,7 +89,7 @@ FINT_API_KEY=
 FINT_WEBHOOK_SECRET=
 
 # PWA
-NEXT_PUBLIC_PWA_ENABLED=true
+NEXT_PUBLIC_APP_NAME=Conferencia
 ```
 
 ### 2.4 Crear tablas en Supabase
@@ -260,7 +260,7 @@ DATABASE_URL=...
 FINT_API_BASE_URL=...
 FINT_API_KEY=...
 FINT_WEBHOOK_SECRET=...
-NEXT_PUBLIC_PWA_ENABLED=true
+NEXT_PUBLIC_APP_NAME=Conferencia
 ```
 
 ### 8.3 Deploy

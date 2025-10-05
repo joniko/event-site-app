@@ -319,7 +319,7 @@ export async function updateTicketByReference(
       value: string;
     }>;
   }
-): Promise<any> {
+): Promise<FintTicket> {
   const url = `${process.env.FINT_API_BASE_URL}/event/ticket/reference/${encodeURIComponent(reference)}`;
 
   try {

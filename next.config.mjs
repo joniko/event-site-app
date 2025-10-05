@@ -18,6 +18,14 @@ export default withSerwist({
         protocol: 'https',
         hostname: 'img.youtube.com',
       },
+      {
+        protocol: 'https',
+        hostname: '**.fint.app',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.fint.app',
+      },
     ],
   },
 });

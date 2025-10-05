@@ -1,6 +1,6 @@
-# 🎪 App de Conferencias - Next.js PWA
+# 🎪 App de Conferencias
 
-> Progressive Web App para conferencias y eventos construida con Next.js 15, React 19, Drizzle ORM y Supabase.
+> App web para conferencias y eventos construida con Next.js 15, React 19, Drizzle ORM y Supabase.
 
 ## ✨ Features
 
@@ -44,8 +44,8 @@
 
 1. **Clonar el repositorio**
 ```bash
-git clone https://github.com/yourusername/nextjs-pwa.git
-cd nextjs-pwa
+git clone https://github.com/yourusername/conferencia-app.git
+cd conferencia-app
 ```
 
 2. **Instalar dependencias**

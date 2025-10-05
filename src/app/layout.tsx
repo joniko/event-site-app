@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const APP_NAME = "Next.js PWA";
-const APP_DEFAULT_TITLE = "Next.js PWA Starter Template";
-const APP_TITLE_TEMPLATE = "%s - Next.js PWA";
-const APP_DESCRIPTION = "This is a minimal template for creating a Progressive Web App (PWA) using Next.js 15, TailwindCSS v4.0 and Serwist.";
+const APP_NAME = "Tu Conferencia";
+const APP_DEFAULT_TITLE = "Tu Conferencia - App de Eventos";
+const APP_TITLE_TEMPLATE = "%s - Tu Conferencia";
+const APP_DESCRIPTION = "App web para conferencias y eventos. Accede al programa, tus entradas, stands y mucho más.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -41,25 +41,14 @@ export const metadata: Metadata = {
     },
   },
   keywords: [
-    "Nextjs PWA",
-    "Nextjs 15 PWA",
-    "Nextjs 15 PWA Template",
-    "Minimal PWA Template Next.js 15",
-    "Tailwind CSS PWA Template Next.js 15",
-    "Serwist PWA Template Next.js 15",
-    "Next.js 15 PWA Boilerplate",
-    "Create PWA with Next.js 15",
-    "Fast Next.js 15 PWA",
-    "Offline Next.js 15 PWA",
-    "Lightweight Next.js 15 PWA Template",
-    "Next.js 15 PWA Starter",
-    "Minimal Next.js 15 Tailwind CSS PWA",
-    "Next.js 15 Serwist Tailwind PWA Template",
-    "Best Next.js 15 PWA Template",
-    "Easy Next.js 15 PWA Setup",
-    "Next.js 15 PWA GitHub",
-    "Free Next.js 15 PWA Template",
-    "Open Source Next.js 15 PWA"
+    "conferencia",
+    "evento",
+    "app conferencia",
+    "agenda evento",
+    "tickets",
+    "programa conferencia",
+    "stands",
+    "plenarias"
   ],
   appleWebApp: {
     capable: true,
@@ -100,7 +89,7 @@ export default function RootLayout({
 }>) {
   return (
     <ViewTransitions>
-      <html lang="en" dir="ltr">
+      <html lang="es_AR" dir="ltr">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >

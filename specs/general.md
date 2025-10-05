@@ -1,12 +1,12 @@
 # App de Conferencias – Especificación técnica para desarrollo (MVP)
 
-> **Contexto**: App web para conferencias/eventos. MVP sin "favoritos". Rol de usuario: **Asistente**. Rol de backoffice: **Organizador**. Secciones: **Home/Feed**, **Programa+Plenarias** (con mapa embebido), **Entradas** (sync Fint), **Stands/Organización**, **Páginas personalizadas** (en menú "Más"), **Newsletter**. **NOTA**: Encuestas y Q&A quedan fuera del MVP inicial (V1.1). Soporte para multi-evento en mente (V1.1: tenant_id en DB para separar datos por conferencia). **Base del proyecto**: Template nextjs-pwa (Next.js 15 + Tailwind v4 + Serwist para PWA) ✅ ya clonado. View Transitions integradas con next-view-transitions ✅. **Integración Fint**: Usar endpoint GET /api/v1/event/ticket/email/{email} para fetch de tickets por email del usuario (autenticado con x-api-key). Sync vía webhook (configurado en dashboard Fint, payload a /api/tickets/sync) o manual.
+> **Contexto**: App web para conferencias/eventos. MVP sin "favoritos". Rol de usuario: **Asistente**. Rol de backoffice: **Organizador**. Secciones: **Home/Feed**, **Programa+Plenarias** (con mapa embebido), **Entradas** (sync Fint), **Stands/Organización**, **Páginas personalizadas** (en menú "Más"), **Newsletter**. **NOTA**: Encuestas y Q&A quedan fuera del MVP inicial (V1.1). Soporte para multi-evento en mente (V1.1: tenant_id en DB para separar datos por conferencia). **Base del proyecto**: Next.js 15 + Tailwind v4 + Serwist para PWA ✅. View Transitions integradas con next-view-transitions ✅. **Integración Fint**: Usar endpoint GET /api/v1/event/ticket/email/{email} para fetch de tickets por email del usuario (autenticado con x-api-key). Sync vía webhook (configurado en dashboard Fint, payload a /api/tickets/sync) o manual.
 
 ---
 
 ## 1) Stack y lineamientos
 
-* **Frontend**: Next.js 15 (App Router, RSC, basado en nextjs-pwa template ✅), React 19, TypeScript.
+* **Frontend**: Next.js 15 (App Router, RSC, ), React 19, TypeScript.
 * **UI**: TailwindCSS v4.0 + shadcn/ui (Radix). Iconos: lucide-react. Toasts: sonner. Drawer mobile: vaul.
 * **PWA**: Serwist para service worker (offline support, caching), Web App Manifest para add-to-home-screen.
 * **View Transitions**: next-view-transitions ✅ ya integrado para animaciones suaves entre rutas.
@@ -28,7 +28,7 @@
 
 ## 2) Estructura de proyecto (propuesta)
 
-> **Nota**: Template nextjs-pwa ✅ ya clonado. ViewTransitions ✅ ya integrado. Usar Drizzle ORM para DB.
+> **Nota**: Proyecto base configurado. ViewTransitions ✅ ya integrado. Usar Drizzle ORM para DB.
 
 ```
 app/
@@ -403,7 +403,7 @@ SENTRY_DSN=
 NEXT_PUBLIC_SENTRY_DSN=
 
 # PWA
-NEXT_PUBLIC_PWA_ENABLED=true
+NEXT_PUBLIC_APP_NAME=Conferencia
 ```
 
 ---
@@ -529,7 +529,7 @@ export async function createPost(data: CreatePostInput) {
 
 ## 15) Definiciones "Ready"
 
-* ✅ Template nextjs-pwa clonado
+* ✅ Proyecto base configurado
 * ✅ View Transitions integradas (next-view-transitions)
 * ✅ Build inicial exitoso
 * 🔄 Diseño de UI base acordado

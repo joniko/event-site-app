@@ -5,7 +5,7 @@ Estado actual del desarrollo del MVP (9 semanas)
 ## ✅ Completado
 
 ### Setup Base (Semana 1) - 70% Complete
-- [x] Template nextjs-pwa clonado
+- [x] Proyecto base configurado
 - [x] View Transitions integradas (next-view-transitions)
 - [x] Drizzle ORM configurado
 - [x] Schema completo definido

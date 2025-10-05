@@ -93,7 +93,7 @@ npm install -D drizzle-kit @sentry/nextjs
 
 ## Estado actual del proyecto:
 
-✅ Template nextjs-pwa clonado
+✅ Proyecto base configurado
 ✅ View Transitions integradas (next-view-transitions)
 ✅ Build inicial exitoso
 ✅ Git inicializado con commit
