@@ -162,7 +162,7 @@ export default function EntradasPage() {
 
               {/* Details */}
               <div className="space-y-2 text-sm mb-4">
-              {ticket.purchaseReference && (
+                {ticket.purchaseReference && (
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Orden:</span>
                     <span className="font-mono text-xs">{ticket.purchaseReference}</span>
@@ -174,7 +174,12 @@ export default function EntradasPage() {
                   <span className="font-mono font-semibold text-xs">{ticket.reference}</span>
                 </div>
 
-
+                {ticket.document && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Documento:</span>
+                    <span className="font-mono text-xs">{ticket.document}</span>
+                  </div>
+                )}
               </div>
 
               {/* Actions */}

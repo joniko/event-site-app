@@ -89,6 +89,7 @@ export interface Ticket {
   userEmail: string;
   firstName: string | null;
   lastName: string | null;
+  document: string | null;
   amount: string;
   reference: string;
   itemName?: string;
@@ -109,6 +110,7 @@ export const mapToTicket = (fintTicket: FintTicket): Omit<Ticket, 'id'> => ({
   userEmail: fintTicket.email,
   firstName: fintTicket.firstName || null,
   lastName: fintTicket.lastName || null,
+  document: fintTicket.document || null,
   amount: fintTicket.amount,
   reference: fintTicket.reference,
   itemName: fintTicket.itemName,
@@ -268,6 +270,7 @@ export async function fetchAllUserTickets(email: string): Promise<Omit<Ticket, '
             userEmail: attendee.email,
             firstName: attendee.firstName || null,
             lastName: attendee.lastName || null,
+            document: attendee.document || null,
             amount: attendee.amount,
             reference: attendee.reference,
             itemName: attendee.itemName,

@@ -21,7 +21,7 @@ export default function EditTicketModal({
     firstName: ticket.firstName || '',
     lastName: ticket.lastName || '',
     email: ticket.userEmail || '',
-    document: '',
+    document: ticket.document || '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
