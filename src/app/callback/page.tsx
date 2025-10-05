@@ -10,36 +10,63 @@ function CallbackContent() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      const supabase = createBrowserClient();
+      
+      // Get URL params - Supabase can send different combinations
+      const token_hash = searchParams.get('token_hash');
+      const type = searchParams.get('type');
       const code = searchParams.get('code');
       
-      console.log('Callback received with code:', code ? 'YES' : 'NO');
-      
-      if (code) {
-        const supabase = createBrowserClient();
-        
-        // Check if code_verifier exists in localStorage
-        const storageKeys = Object.keys(localStorage).filter(k => k.includes('supabase') || k.includes('code_verifier'));
-        console.log('Supabase storage keys:', storageKeys);
-        
-        // Exchange code for session
-        const { error, data } = await supabase.auth.exchangeCodeForSession(code);
-        
-        if (error) {
-          console.error('Error exchanging code:', error);
-          console.error('Error details:', {
-            message: error.message,
-            status: error.status,
-            code: error.code
+      console.log('Callback params:', { 
+        has_token_hash: !!token_hash, 
+        has_type: !!type, 
+        has_code: !!code,
+        type_value: type 
+      });
+
+      try {
+        // Magic Link with token_hash (non-PKCE flow)
+        if (token_hash && type) {
+          console.log('Using verifyOtp flow with token_hash');
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash,
+            type: type as any,
           });
-          router.push('/login?error=auth_failed');
+
+          if (error) {
+            console.error('Error verifying OTP:', error);
+            router.push('/login?error=invalid_link');
+            return;
+          }
+
+          console.log('Magic link verified successfully');
+          router.push('/');
           return;
         }
         
-        console.log('Session created successfully:', data?.session ? 'YES' : 'NO');
+        // OAuth/PKCE flow with code
+        if (code) {
+          console.log('Using exchangeCodeForSession flow');
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          
+          if (error) {
+            console.error('Error exchanging code:', error);
+            router.push('/login?error=auth_failed');
+            return;
+          }
+
+          console.log('Code exchanged successfully');
+          router.push('/');
+          return;
+        }
+
+        // No params - just redirect
+        console.log('No auth params found, redirecting to home');
+        router.push('/');
+      } catch (error) {
+        console.error('Unexpected error during auth:', error);
+        router.push('/login?error=unexpected');
       }
-      
-      // Redirect to home
-      router.push('/');
     };
 
     handleCallback();
