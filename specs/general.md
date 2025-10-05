@@ -181,24 +181,6 @@ public/
 * Persistencia mínima en DB o export CSV; V2: integración con proveedor (Resend/ConvertKit).
 * **Acc. Criteria**: email válido, feedback de éxito, evitar duplicados.
 
----
-
-## 4) Admin (MVP)
-
-* **Permisos**: role `ADMIN` o `EDITOR` para backoffice.
-* **Secciones**:
-
-  * Dashboard: métricas básicas (#posts, #sesiones, #stands, #tickets sync, #newsletter subs).
-  * Posts: listado, crear, editar, pin, (publicado/oculto).
-  * Programa: días/salas/tracks, sesiones (flag "Plenaria", `materialsUrl`). Validar solapes por sala/horario.
-  * Stands: CRUD con tipo, links, logo.
-  * Páginas: CRUD, bloques, orden y visibilidad.
-  * Entradas: read-only (lista tickets sync) + botón "Re-sync" (llama a /api/tickets/sync con payload simulado o batch fetch).
-  * Newsletter: read-only (lista emails) + export CSV.
-* **Acc. Criteria**:
-
-  * Todo CRUD con formularios validados (zod) y toasts de feedback (sonner).
-  * Listas con búsqueda y paginación simple.
 
 ---
 

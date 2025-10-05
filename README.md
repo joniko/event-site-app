@@ -1,6 +1,6 @@
-# 🎪 App de Conferencias
+# 🎪 App de Conferencias - Next.js PWA
 
-> App web para conferencias y eventos construida con Next.js 15, React 19, Drizzle ORM y Supabase.
+> Progressive Web App para conferencias y eventos construida con Next.js 15, React 19, Drizzle ORM y Supabase.
 
 ## ✨ Features
 
@@ -44,8 +44,8 @@
 
 1. **Clonar el repositorio**
 ```bash
-git clone https://github.com/yourusername/conferencia-app.git
-cd conferencia-app
+git clone https://github.com/yourusername/nextjs-pwa.git
+cd nextjs-pwa
 ```
 
 2. **Instalar dependencias**
@@ -76,20 +76,39 @@ FINT_WEBHOOK_SECRET=your-webhook-secret
 
 4. **Setup Supabase**
 
-Crea las tablas ejecutando el SQL del archivo `specs/general.md` (Anexo A) en el SQL Editor de Supabase.
+**Opción A: Usando Supabase CLI (Recomendado)**
 
-O usa Drizzle para generar y aplicar migrations:
 ```bash
-npx drizzle-kit generate
-npx drizzle-kit push
+# 1. Autenticarse (obtén tu token en https://supabase.com/dashboard/account/tokens)
+supabase login --token <tu-access-token>
+
+# 2. Vincular el proyecto
+npm run supabase:link
+
+# 3. Crear las tablas (ejecuta los archivos SQL en Supabase Dashboard primero)
+# O crea una migración inicial:
+npm run supabase:migration:new initial-schema
+# Luego copia el contenido de supabase-create-tables.sql al archivo generado
+
+# 4. Aplicar migraciones
+npm run supabase:migration:push
 ```
+
+**Opción B: Manual (más rápido para empezar)**
+
+Ejecuta los siguientes archivos SQL en el SQL Editor de Supabase (en orden):
+1. `supabase-create-tables.sql` - Crea todas las tablas
+2. `supabase-setup.sql` - Configura RLS, triggers y constraints
+3. `supabase-seed.sql` - Inserta datos de prueba (opcional)
+
+**Nota**: `drizzle-kit push` no funciona con Supabase Pooler. Usa Supabase CLI para migraciones.
 
 5. **Ejecutar en desarrollo**
 ```bash
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+Abre [xhttp://localhost:3000](http://localhost:3000) en tu navegador.
 
 ## 📁 Estructura del Proyecto
 

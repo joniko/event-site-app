@@ -115,12 +115,23 @@ export const stands = pgTable('stands', {
 });
 
 // ============================================
-// PAGES (Páginas personalizadas)
+// PAGES (Sistema de páginas con módulos)
 // ============================================
 export const pages = pgTable('pages', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
   slug: text('slug').notNull().unique(),
+  type: text('type').notNull(), // FEED | PROGRAMA | ENTRADAS | STANDS | CUSTOM
+  icon: text('icon').notNull(), // Lucide icon name (ej: 'Home', 'Calendar')
+  visible: boolean('visible').notNull().default(true),
+  order: integer('order').notNull().unique(),
+  config: jsonb('config').$type<{
+    // Configuración específica por tipo de módulo
+    itemsPerPage?: number;
+    showPinnedFirst?: boolean;
+    defaultView?: 'day' | 'track';
+    [key: string]: any;
+  }>().default({}),
   blocks: jsonb('blocks').$type<Array<{
     type: 'paragraph' | 'image' | 'link' | 'list' | 'embed' | 'accordion' | 'grid';
     text?: string;
@@ -129,9 +140,7 @@ export const pages = pgTable('pages', {
     label?: string;
     items?: Array<{ title: string; content: string }>;
     images?: Array<{ url: string; alt: string }>;
-  }>>().notNull(),
-  visible: text('visible').notNull().default('PUBLIC'), // PUBLIC | AUTH
-  order: integer('order').notNull().default(0),
+  }>>(), // Solo para type=CUSTOM
   tenantId: uuid('tenant_id').notNull().defaultRandom(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

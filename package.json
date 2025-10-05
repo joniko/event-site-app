@@ -10,11 +10,17 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "supabase:link": "supabase link --project-ref xxbvdwxxmqfpmzeufswm",
+    "supabase:migration:new": "supabase migration new",
+    "supabase:migration:push": "supabase db push",
+    "supabase:migration:list": "supabase migration list",
+    "supabase:types": "supabase gen types typescript --project-id xxbvdwxxmqfpmzeufswm > lib/db/database.types.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.13",
