@@ -36,14 +36,17 @@ export default function EntradasPage() {
     const supabase = createBrowserClient();
 
     // Check auth
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.push('/login');
         return;
       }
 
       await fetchTickets();
-    });
+    };
+
+    checkAuth();
   }, [router]);
 
   const handleEditSuccess = () => {

@@ -6,38 +6,18 @@
 
 import { createBrowserClient as createSupabaseBrowserClient } from '@supabase/ssr';
 
-// Client-side Supabase client
-export const createBrowserClient = () => {
-  return createSupabaseBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          const cookies = document.cookie.split('; ').reduce((acc, cookie) => {
-            const [name, value] = cookie.split('=');
-            if (name && value) {
-              acc.push({ name, value: decodeURIComponent(value) });
-            }
-            return acc;
-          }, [] as { name: string; value: string }[]);
-          return cookies;
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            const cookieOptions = [];
-            cookieOptions.push(`path=${options?.path || '/'}`);
-            if (options?.maxAge) cookieOptions.push(`max-age=${options.maxAge}`);
-            if (options?.domain) cookieOptions.push(`domain=${options.domain}`);
-            if (options?.sameSite) cookieOptions.push(`samesite=${options.sameSite}`);
-            if (options?.secure) cookieOptions.push('secure');
+// Client-side Supabase client (singleton)
+let supabaseInstance: ReturnType<typeof createSupabaseBrowserClient> | null = null;
 
-            document.cookie = `${name}=${encodeURIComponent(value)}; ${cookieOptions.join('; ')}`;
-          });
-        },
-      },
-    }
+export const createBrowserClient = () => {
+  if (supabaseInstance) return supabaseInstance;
+
+  supabaseInstance = createSupabaseBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
+
+  return supabaseInstance;
 };
 
 // Get current user from session
@@ -74,12 +54,36 @@ export async function signInWithMagicLink(email: string) {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${window.location.origin}/callback`,
+      emailRedirectTo: `${window.location.origin}/auth/callback`,
       shouldCreateUser: true,
     },
   });
 
   if (error) throw error;
+}
+
+// Alternative: Sign in with magic link (no PKCE - uses old token flow)
+export async function signInWithMagicLinkLegacy(email: string) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/otp`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      },
+      body: JSON.stringify({
+        email,
+        create_user: true,
+        data: {},
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Error sending magic link');
+  }
 }
 
 // Sign in with Google
@@ -88,7 +92,7 @@ export async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/callback`,
+      redirectTo: `${window.location.origin}/auth/callback`,
     },
   });
 
