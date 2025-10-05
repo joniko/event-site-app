@@ -6,7 +6,7 @@ import { createBrowserClient, signOut } from '@/lib/auth';
 import type { User } from '@supabase/supabase-js';
 import { PostCard, PostCardSkeleton } from '@/components/post-card';
 import { mockPosts } from '@/lib/mock-data';
-import TopBar from '@/components/TopBar';
+import { LogOut, User as UserIcon } from 'lucide-react';
 
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -51,26 +51,32 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <TopBar
-        title="Conferencia 2025"
-        subtitle={user ? user.email : undefined}
-        largeTitle={true}
-        actions={user ? [
-          {
-            label: 'Mi perfil',
-            onClick: () => router.push('/profile'),
-          },
-          {
-            label: 'Configuración',
-            onClick: () => router.push('/settings'),
-          },
-          {
-            label: 'Cerrar sesión',
-            onClick: handleSignOut,
-            variant: 'danger',
-          },
-        ] : []}
-      />
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Conferencia 2025</h1>
+            <p className="text-xs text-gray-500">Home / Feed</p>
+          </div>
+
+          {user && (
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 text-sm">
+                <UserIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-700 max-w-[120px] truncate">{user.email}</span>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition"
+                title="Cerrar sesión"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Salir</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
 
       {/* Feed */}
       <main className="max-w-2xl mx-auto px-4 py-6">
