@@ -1,28 +1,40 @@
 /**
- * Supabase Auth Helpers
- * 
- * Utilities for authentication with Supabase
+ * Supabase Auth Helpers (Client-side only)
+ *
+ * For server-side auth, use @/lib/auth-server
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient as createSupabaseBrowserClient } from '@supabase/ssr';
 
 // Client-side Supabase client
 export const createBrowserClient = () => {
-  return createClient(
+  return createSupabaseBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-};
-
-// Server-side Supabase client (for API routes and server components)
-export const createServerClient = () => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
+      cookies: {
+        getAll() {
+          const cookies = document.cookie.split('; ').reduce((acc, cookie) => {
+            const [name, value] = cookie.split('=');
+            if (name && value) {
+              acc.push({ name, value: decodeURIComponent(value) });
+            }
+            return acc;
+          }, [] as { name: string; value: string }[]);
+          return cookies;
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const cookieOptions = [];
+            cookieOptions.push(`path=${options?.path || '/'}`);
+            if (options?.maxAge) cookieOptions.push(`max-age=${options.maxAge}`);
+            if (options?.domain) cookieOptions.push(`domain=${options.domain}`);
+            if (options?.sameSite) cookieOptions.push(`samesite=${options.sameSite}`);
+            if (options?.secure) cookieOptions.push('secure');
+
+            document.cookie = `${name}=${encodeURIComponent(value)}; ${cookieOptions.join('; ')}`;
+          });
+        },
       },
     }
   );
@@ -62,7 +74,8 @@ export async function signInWithMagicLink(email: string) {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${window.location.origin}/auth/callback`,
+      emailRedirectTo: `${window.location.origin}/callback`,
+      shouldCreateUser: true,
     },
   });
 
@@ -75,7 +88,7 @@ export async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `${window.location.origin}/callback`,
     },
   });
 

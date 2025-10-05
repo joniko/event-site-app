@@ -39,6 +39,44 @@ export interface FintTicket {
   };
 }
 
+// Types for Purchase endpoint
+// https://docs.fint.app/api-reference/eventos/buscar-compras-por-email-del-comprador
+export interface FintPurchase {
+  id: number;
+  reference: string;
+  buyerFirstName: string;
+  buyerLastName: string;
+  buyerDocument: string;
+  buyerEmail: string;
+  buyerPhone: string;
+  totalAmount: string;
+  createdAt: string;
+  pdfUrl: string;
+  organizationId: number;
+  eventPageId: number;
+  eventPage: {
+    id: number;
+    name: string;
+    reference: string;
+  };
+  attendees: Array<{
+    id: number;
+    firstName: string;
+    lastName: string;
+    document: string;
+    email: string;
+    status: string;
+    amount: string;
+    reference: string;
+    itemName: string;
+    qrUrl: string;
+    generateQr: boolean;
+    pdfUrl: string;
+    askInformation: boolean;
+    isAdditional: boolean;
+  }>;
+}
+
 // Our internal Ticket type
 export interface Ticket {
   id: string;
@@ -53,6 +91,9 @@ export interface Ticket {
   lastName: string | null;
   amount: string;
   reference: string;
+  itemName?: string;
+  purchaseReference?: string;
+  buyerEmail?: string;
 }
 
 /**
@@ -63,13 +104,16 @@ export const mapToTicket = (fintTicket: FintTicket): Omit<Ticket, 'id'> => ({
   status: fintTicket.status,
   qrUrl: fintTicket.qrUrl || null,
   pdfUrl: fintTicket.pdfUrl || null,
-  eventName: fintTicket.purchase.eventPage.name,
-  purchasedAt: new Date(fintTicket.purchase.createdAt),
+  eventName: fintTicket.purchase?.eventPage?.name || fintTicket.itemName || 'Evento sin nombre',
+  purchasedAt: new Date(fintTicket.purchase?.createdAt || Date.now()),
   userEmail: fintTicket.email,
   firstName: fintTicket.firstName || null,
   lastName: fintTicket.lastName || null,
   amount: fintTicket.amount,
   reference: fintTicket.reference,
+  itemName: fintTicket.itemName,
+  purchaseReference: fintTicket.purchase?.reference,
+  buyerEmail: fintTicket.purchase?.buyerEmail,
 });
 
 /**
@@ -141,6 +185,112 @@ export function validateWebhookSignature(signature: string): boolean {
   // TODO: Implement actual signature validation based on Fint docs
   // This is a placeholder - check Fint documentation for actual implementation
   return signature === secret;
+}
+
+/**
+ * Fetch purchases by buyer email from Fint API
+ *
+ * @param email - Buyer email to search purchases
+ * @param retries - Number of retries on rate limit (default: 3)
+ * @returns Array of purchases with attendees
+ */
+export async function fetchPurchasesByEmail(
+  email: string,
+  retries = 3
+): Promise<FintPurchase[]> {
+  const url = `${process.env.FINT_API_BASE_URL}/event/purchase/email/${encodeURIComponent(email)}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'x-api-key': process.env.FINT_API_KEY!,
+      },
+      next: { revalidate: 300 }, // Cache for 5 minutes
+    });
+
+    // Handle rate limiting with retry
+    if (response.status === 429 && retries > 0) {
+      const backoffDelay = 2000 * (4 - retries);
+      console.warn(`Fint API rate limit hit. Retrying in ${backoffDelay}ms...`);
+
+      await new Promise((resolve) => setTimeout(resolve, backoffDelay));
+      return fetchPurchasesByEmail(email, retries - 1);
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(
+        `Fint API error: ${response.status} ${response.statusText} - ${errorText}`
+      );
+    }
+
+    const data: FintPurchase[] = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Fint purchase fetch error:', {
+      email,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    throw error;
+  }
+}
+
+/**
+ * Fetch all tickets for a user (as buyer or attendee)
+ * Combines purchases (where user is buyer) and tickets (where user is attendee)
+ *
+ * @param email - User email
+ * @returns Unified array of tickets with purchase info
+ */
+export async function fetchAllUserTickets(email: string): Promise<Omit<Ticket, 'id'>[]> {
+  try {
+    // Fetch both in parallel
+    const [purchases, individualTickets] = await Promise.all([
+      fetchPurchasesByEmail(email),
+      fetchTicketsByEmail(email),
+    ]);
+
+    const allTickets: Omit<Ticket, 'id'>[] = [];
+    const seenTicketIds = new Set<number>();
+
+    // Process purchases first (user as buyer)
+    for (const purchase of purchases) {
+      for (const attendee of purchase.attendees) {
+        if (!seenTicketIds.has(attendee.id)) {
+          seenTicketIds.add(attendee.id);
+          allTickets.push({
+            externalId: attendee.id.toString(),
+            status: attendee.status,
+            qrUrl: attendee.qrUrl || null,
+            pdfUrl: attendee.pdfUrl || null,
+            eventName: purchase.eventPage?.name || attendee.itemName || 'Evento sin nombre',
+            purchasedAt: new Date(purchase.createdAt),
+            userEmail: attendee.email,
+            firstName: attendee.firstName || null,
+            lastName: attendee.lastName || null,
+            amount: attendee.amount,
+            reference: attendee.reference,
+            itemName: attendee.itemName,
+            purchaseReference: purchase.reference,
+            buyerEmail: purchase.buyerEmail,
+          });
+        }
+      }
+    }
+
+    // Add individual tickets (where user is attendee but not buyer)
+    for (const ticket of individualTickets) {
+      const ticketId = parseInt(ticket.externalId);
+      if (!seenTicketIds.has(ticketId)) {
+        allTickets.push(ticket);
+      }
+    }
+
+    return allTickets;
+  } catch (error) {
+    console.error('Error fetching all user tickets:', error);
+    throw error;
+  }
 }
 
 /**

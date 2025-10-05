@@ -1,38 +1,36 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/auth';
 
-export default function AuthCallbackPage() {
+export default function CallbackPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const handleCallback = async () => {
-      const supabase = createBrowserClient();
-
-      // Get the code from URL
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-
-      if (error) {
-        console.error('Error during auth callback:', error);
-        router.push('/auth/login?error=callback_failed');
-        return;
+      const code = searchParams.get('code');
+      
+      if (code) {
+        const supabase = createBrowserClient();
+        
+        // Exchange code for session
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        
+        if (error) {
+          console.error('Error exchanging code:', error);
+          router.push('/login?error=auth_failed');
+          return;
+        }
       }
-
-      if (session) {
-        // Redirect to home page
-        router.push('/');
-      } else {
-        router.push('/auth/login');
-      }
+      
+      // Redirect to home
+      router.push('/');
     };
 
     handleCallback();
-  }, [router]);
+  }, [router, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
