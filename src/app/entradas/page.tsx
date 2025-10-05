@@ -15,9 +15,10 @@ export default function EntradasPage() {
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
   const router = useRouter();
 
-  const fetchTickets = async () => {
+  const fetchTickets = async (noCache = false) => {
     try {
-      const response = await fetch('/api/tickets');
+      const url = noCache ? '/api/tickets?noCache=true' : '/api/tickets';
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Error al cargar las entradas');
       }
@@ -49,7 +50,7 @@ export default function EntradasPage() {
   const handleEditSuccess = () => {
     setEditingTicket(null);
     setLoading(true);
-    fetchTickets();
+    fetchTickets(true); // Force fresh data from Fint API
   };
 
   if (loading) {

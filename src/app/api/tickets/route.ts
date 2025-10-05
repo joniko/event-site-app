@@ -25,8 +25,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if we should bypass cache
+    const { searchParams } = new URL(request.url);
+    const noCache = searchParams.get('noCache') === 'true';
+
     // Fetch tickets from Fint API
-    const tickets = await fetchAllUserTickets(user.email!);
+    const tickets = await fetchAllUserTickets(user.email!, noCache);
 
     return NextResponse.json({
       success: true,

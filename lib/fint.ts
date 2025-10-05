@@ -133,7 +133,8 @@ export const mapToTicket = (fintTicket: FintTicket): Omit<Ticket, 'id'> => ({
  */
 export async function fetchTicketsByEmail(
   email: string,
-  retries = 3
+  retries = 3,
+  noCache = false
 ): Promise<Omit<Ticket, 'id'>[]> {
   const url = `${process.env.FINT_API_BASE_URL}/event/ticket/email/${encodeURIComponent(email)}`;
 
@@ -142,7 +143,7 @@ export async function fetchTicketsByEmail(
       headers: {
         'x-api-key': process.env.FINT_API_KEY!,
       },
-      next: { revalidate: 300 }, // Cache for 5 minutes
+      ...(noCache ? { cache: 'no-store' } : { next: { revalidate: 300 } }), // Cache for 5 minutes or no cache
     });
 
     // Handle rate limiting with retry
@@ -151,7 +152,7 @@ export async function fetchTicketsByEmail(
       console.warn(`Fint API rate limit hit. Retrying in ${backoffDelay}ms...`);
       
       await new Promise((resolve) => setTimeout(resolve, backoffDelay));
-      return fetchTicketsByEmail(email, retries - 1);
+      return fetchTicketsByEmail(email, retries - 1, noCache);
     }
 
     if (!response.ok) {
@@ -198,7 +199,8 @@ export function validateWebhookSignature(signature: string): boolean {
  */
 export async function fetchPurchasesByEmail(
   email: string,
-  retries = 3
+  retries = 3,
+  noCache = false
 ): Promise<FintPurchase[]> {
   const url = `${process.env.FINT_API_BASE_URL}/event/purchase/email/${encodeURIComponent(email)}`;
 
@@ -207,7 +209,7 @@ export async function fetchPurchasesByEmail(
       headers: {
         'x-api-key': process.env.FINT_API_KEY!,
       },
-      next: { revalidate: 300 }, // Cache for 5 minutes
+      ...(noCache ? { cache: 'no-store' } : { next: { revalidate: 300 } }), // Cache for 5 minutes or no cache
     });
 
     // Handle rate limiting with retry
@@ -216,7 +218,7 @@ export async function fetchPurchasesByEmail(
       console.warn(`Fint API rate limit hit. Retrying in ${backoffDelay}ms...`);
 
       await new Promise((resolve) => setTimeout(resolve, backoffDelay));
-      return fetchPurchasesByEmail(email, retries - 1);
+      return fetchPurchasesByEmail(email, retries - 1, noCache);
     }
 
     if (!response.ok) {
@@ -244,12 +246,12 @@ export async function fetchPurchasesByEmail(
  * @param email - User email
  * @returns Unified array of tickets with purchase info
  */
-export async function fetchAllUserTickets(email: string): Promise<Omit<Ticket, 'id'>[]> {
+export async function fetchAllUserTickets(email: string, noCache = false): Promise<Omit<Ticket, 'id'>[]> {
   try {
     // Fetch both in parallel
     const [purchases, individualTickets] = await Promise.all([
-      fetchPurchasesByEmail(email),
-      fetchTicketsByEmail(email),
+      fetchPurchasesByEmail(email, 3, noCache),
+      fetchTicketsByEmail(email, 3, noCache),
     ]);
 
     const allTickets: Omit<Ticket, 'id'>[] = [];
