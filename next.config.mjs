@@ -8,5 +8,16 @@ const withSerwist = withSerwistInit({
 });
 
 export default withSerwist({
-  // Your Next.js config
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+      },
+    ],
+  },
 });

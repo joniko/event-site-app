@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ViewTransitions } from "next-view-transitions";
+import LayoutWrapper from "@/../../components/LayoutWrapper";
+import "remixicon/fonts/remixicon.css";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -102,7 +104,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          {children}
+          <LayoutWrapper>{children}</LayoutWrapper>
         </body>
       </html>
     </ViewTransitions>

@@ -6,6 +6,7 @@ import { createBrowserClient } from '@/lib/auth';
 import type { User } from '@supabase/supabase-js';
 import type { Ticket } from '@/lib/fint';
 import EditTicketModal from '@/components/EditTicketModal';
+import TopBar from '@/components/TopBar';
 
 export default function EntradasPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -55,15 +56,17 @@ export default function EntradasPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Mis Entradas</h1>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-48 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse"
-            />
-          ))}
+      <div className="min-h-screen bg-gray-50">
+        <TopBar title="Mis Entradas" showBack />
+        <div className="container mx-auto px-4 py-6">
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-48 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse"
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -71,13 +74,15 @@ export default function EntradasPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Mis Entradas</h1>
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
-          <h2 className="font-semibold text-red-800 dark:text-red-200 mb-2">
-            Error al cargar entradas
-          </h2>
-          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+      <div className="min-h-screen bg-gray-50">
+        <TopBar title="Mis Entradas" showBack />
+        <div className="container mx-auto px-4 py-6">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+            <h2 className="font-semibold text-red-800 dark:text-red-200 mb-2">
+              Error al cargar entradas
+            </h2>
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          </div>
         </div>
       </div>
     );
@@ -85,35 +90,38 @@ export default function EntradasPage() {
 
   if (tickets.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Mis Entradas</h1>
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">🎫</div>
-          <h2 className="text-xl font-semibold mb-2">No tienes entradas</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Cuando compres o recibas una entrada, aparecerá aquí.
-          </p>
-          <button
-            onClick={() => router.push('/')}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-          >
-            Volver al inicio
-          </button>
+      <div className="min-h-screen bg-gray-50">
+        <TopBar title="Mis Entradas" showBack />
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🎫</div>
+            <h2 className="text-xl font-semibold mb-2">No tienes entradas</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Cuando compres o recibas una entrada, aparecerá aquí.
+            </p>
+            <button
+              onClick={() => router.push('/')}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+            >
+              Volver al inicio
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Mis Entradas</h1>
-        <span className="text-sm text-gray-600 dark:text-gray-400">
-          {tickets.length} {tickets.length === 1 ? 'entrada' : 'entradas'}
-        </span>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <TopBar
+        title="Mis Entradas"
+        subtitle={`${tickets.length} ${tickets.length === 1 ? 'entrada' : 'entradas'}`}
+        showBack
+        largeTitle
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tickets.map((ticket) => (
           <div
             key={ticket.externalId}
@@ -212,6 +220,7 @@ export default function EntradasPage() {
             </div>
           </div>
         ))}
+        </div>
       </div>
 
       {/* Edit Modal */}
