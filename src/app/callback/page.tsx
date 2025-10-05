@@ -11,30 +11,53 @@ function CallbackContent() {
   useEffect(() => {
     const handleCallback = async () => {
       const supabase = createBrowserClient();
+      
+      // Get all URL params that Supabase might send
+      const token_hash = searchParams.get('token_hash');
+      const type = searchParams.get('type');
       const code = searchParams.get('code');
 
-      if (code) {
-        // OAuth flow - exchange code for session
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+      try {
+        // Magic Link flow (has token_hash and type)
+        if (token_hash && type) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash,
+            type: type as 'email' | 'signup' | 'invite' | 'magiclink' | 'recovery' | 'email_change',
+          });
 
-        if (error) {
-          console.error('Error exchanging code:', error);
-          router.push('/login?error=auth_failed');
-          return;
+          if (error) {
+            console.error('Error verifying OTP:', error);
+            router.push('/login?error=invalid_link');
+            return;
+          }
         }
-      } else {
-        // Magic link flow - verify session was created
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // OAuth flow (has code)
+        else if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-        if (error || !session) {
-          console.error('Error verifying session:', error);
-          router.push('/login?error=auth_failed');
-          return;
+          if (error) {
+            console.error('Error exchanging code:', error);
+            router.push('/login?error=auth_failed');
+            return;
+          }
         }
+        // No params - check if session exists
+        else {
+          const { data: { session }, error } = await supabase.auth.getSession();
+
+          if (error || !session) {
+            console.error('No session found:', error);
+            router.push('/login?error=no_session');
+            return;
+          }
+        }
+
+        // Success - redirect to home
+        router.push('/');
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        router.push('/login?error=unexpected');
       }
-
-      // Redirect to home
-      router.push('/');
     };
 
     handleCallback();

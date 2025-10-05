@@ -6,6 +6,7 @@ import { createBrowserClient } from '@/lib/auth';
 import type { Ticket } from '@/lib/fint';
 import EditTicketModal from '@/components/EditTicketModal';
 import TopBar from '@/components/TopBar';
+import Image from 'next/image';
 
 export default function EntradasPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -101,9 +102,11 @@ export default function EntradasPage() {
             {/* QR Code Section */}
             {ticket.qrUrl && (
               <div className="bg-white p-6 flex items-center justify-center border-b border-gray-200 dark:border-gray-700">
-                <img
+                <Image
                   src={ticket.qrUrl}
                   alt={`QR Code para ${ticket.eventName}`}
+                  width={200}
+                  height={200}
                   className="w-full max-w-[200px] h-auto"
                 />
               </div>

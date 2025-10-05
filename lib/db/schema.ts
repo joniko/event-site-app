@@ -130,7 +130,7 @@ export const pages = pgTable('pages', {
     itemsPerPage?: number;
     showPinnedFirst?: boolean;
     defaultView?: 'day' | 'track';
-    [key: string]: any;
+    [key: string]: unknown;
   }>().default({}),
   blocks: jsonb('blocks').$type<Array<{
     type: 'paragraph' | 'image' | 'link' | 'list' | 'embed' | 'accordion' | 'grid';

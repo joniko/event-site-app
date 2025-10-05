@@ -17,7 +17,8 @@
       "Bash(test:*)",
       "Bash(npm run:*)",
       "Bash(SKIP_ENV_VALIDATION=1 npx shadcn@latest add dropdown-menu --yes --overwrite)",
-      "Bash(SKIP_ENV_VALIDATION=1 npx shadcn@latest add sheet --yes --overwrite)"
+      "Bash(SKIP_ENV_VALIDATION=1 npx shadcn@latest add sheet --yes --overwrite)",
+      "Bash(SKIP_ENV_VALIDATION=1 npx shadcn@latest add input select label textarea switch badge --yes --overwrite)"
     ],
     "deny": [],
     "ask": []

@@ -12,8 +12,11 @@ ALTER TABLE public.pages
   ADD COLUMN IF NOT EXISTS config jsonb DEFAULT '{}'::jsonb;
 
 -- 2. Modificar columna visible (de text a boolean)
--- Primero verificar si existe como text
-DO $$
+-- Primero eliminar constraint si existe
+ALTER TABLE public.pages DROP CONSTRAINT IF EXISTS pages_visible_check;
+
+-- Verificar si existe como text y convertir
+DO $do$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.columns
@@ -22,19 +25,24 @@ BEGIN
     AND column_name = 'visible'
     AND data_type = 'text'
   ) THEN
-    -- Convertir valores existentes
-    UPDATE public.pages SET visible =
-      CASE
-        WHEN visible = 'PUBLIC' THEN 'true'
-        ELSE 'false'
-      END;
+    -- Eliminar el default antes de cambiar tipo
+    ALTER TABLE public.pages ALTER COLUMN visible DROP DEFAULT;
 
-    -- Cambiar tipo de columna
+    -- Cambiar tipo de columna directamente
     ALTER TABLE public.pages
       ALTER COLUMN visible TYPE boolean
-      USING (visible::boolean);
+      USING (
+        CASE
+          WHEN visible = 'PUBLIC' THEN true
+          WHEN visible = 'AUTH' THEN false
+          ELSE true
+        END
+      );
+
+    -- Restaurar default con el nuevo tipo
+    ALTER TABLE public.pages ALTER COLUMN visible SET DEFAULT true;
   END IF;
-END $$;
+END $do$;
 
 -- 3. Hacer columnas NOT NULL (después de agregar valores default)
 -- Primero actualizar filas existentes con valores por defecto
@@ -46,7 +54,9 @@ WHERE type IS NULL;
 
 -- Ahora hacer NOT NULL
 ALTER TABLE public.pages
-  ALTER COLUMN type SET NOT NULL,
+  ALTER COLUMN type SET NOT NULL;
+
+ALTER TABLE public.pages
   ALTER COLUMN icon SET NOT NULL;
 
 -- 4. Agregar constraints de tipo
@@ -58,7 +68,7 @@ ALTER TABLE public.pages
   CHECK (type IN ('FEED', 'PROGRAMA', 'ENTRADAS', 'STANDS', 'CUSTOM'));
 
 -- 5. Agregar constraint UNIQUE a la columna order (si no existe)
-DO $$
+DO $do2$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
@@ -67,7 +77,7 @@ BEGIN
     ALTER TABLE public.pages
       ADD CONSTRAINT pages_order_unique UNIQUE ("order");
   END IF;
-END $$;
+END $do2$;
 
 -- 6. Crear índices necesarios
 CREATE INDEX IF NOT EXISTS idx_pages_visible ON public.pages(visible);

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Edit, Eye, EyeOff, Trash2 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 type Page = typeof pagesSchema.$inferSelect;
 
@@ -24,10 +26,38 @@ const moduleTypeBadges: Record<string, { label: string; color: string }> = {
 
 export default function PagesTable({ pages: initialPages }: PagesTableProps) {
   const [pages, setPages] = useState(initialPages);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const router = useRouter();
 
   const getIcon = (iconName: string) => {
-    const IconComponent = (Icons as any)[iconName];
+    const IconComponent = Icons[iconName as keyof typeof Icons] as React.ComponentType<{ className?: string }>;
     return IconComponent ? <IconComponent className="w-4 h-4" /> : null;
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar esta página?')) {
+      return;
+    }
+
+    setDeletingId(id);
+
+    try {
+      const response = await fetch(`/api/admin/pages/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar');
+      }
+
+      toast.success('Página eliminada');
+      setPages(pages.filter(p => p.id !== id));
+      router.refresh();
+    } catch {
+      toast.error('Error al eliminar página');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -122,6 +152,8 @@ export default function PagesTable({ pages: initialPages }: PagesTableProps) {
                           variant="ghost"
                           size="sm"
                           className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                          onClick={() => handleDelete(page.id)}
+                          disabled={deletingId === page.id}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
