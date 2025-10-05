@@ -43,9 +43,27 @@ Una vez creado el proyecto:
    - **service_role** key (⚠️ mantener secreta)
 
 3. Ve a **Settings** → **Database**
-4. Copia el **Connection string** (URI mode)
-   - Formato: `postgresql://postgres:[YOUR-PASSWORD]@db.xxx.supabase.co:5432/postgres`
-   - Reemplaza `[YOUR-PASSWORD]` con tu contraseña de DB
+4. Scroll down hasta encontrar **"Connection string"**
+5. Selecciona el tab **"URI"** (no "Session" ni "Transaction")
+6. Copia el string completo
+7. **IMPORTANTE**: Reemplaza `[YOUR-PASSWORD]` con tu contraseña de DB
+   
+   Ejemplo:
+   ```
+   # Lo que copias de Supabase:
+   postgresql://postgres.xxxxx:[YOUR-PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+   
+   # Lo que pegas en .env.local (con tu password real):
+   postgresql://postgres.xxxxx:mi_password_123@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+   ```
+
+   **Alternativa si no encuentras "Connection string":**
+   - Usa tu Project URL para construirlo manualmente
+   - Si tu Project URL es `https://abcdefg.supabase.co`
+   - Tu Connection String será:
+   ```
+   postgresql://postgres:tu_password@db.abcdefg.supabase.co:5432/postgres
+   ```
 
 ### 2.3 Configurar variables de entorno
 
