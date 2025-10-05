@@ -12,17 +12,30 @@ function CallbackContent() {
     const handleCallback = async () => {
       const code = searchParams.get('code');
       
+      console.log('Callback received with code:', code ? 'YES' : 'NO');
+      
       if (code) {
         const supabase = createBrowserClient();
         
+        // Check if code_verifier exists in localStorage
+        const storageKeys = Object.keys(localStorage).filter(k => k.includes('supabase') || k.includes('code_verifier'));
+        console.log('Supabase storage keys:', storageKeys);
+        
         // Exchange code for session
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { error, data } = await supabase.auth.exchangeCodeForSession(code);
         
         if (error) {
           console.error('Error exchanging code:', error);
+          console.error('Error details:', {
+            message: error.message,
+            status: error.status,
+            code: error.code
+          });
           router.push('/login?error=auth_failed');
           return;
         }
+        
+        console.log('Session created successfully:', data?.session ? 'YES' : 'NO');
       }
       
       // Redirect to home
