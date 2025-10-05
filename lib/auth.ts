@@ -14,7 +14,12 @@ export const createBrowserClient = () => {
 
   supabaseInstance = createSupabaseBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        flowType: 'pkce', // Use modern PKCE flow instead of implicit
+      },
+    }
   );
 
   return supabaseInstance;
