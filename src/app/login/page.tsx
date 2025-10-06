@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { signInWithMagicLink, signInWithGoogle } from '@/lib/auth';
 
 export default function LoginPage() {
@@ -139,13 +140,13 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6">
           Al continuar, aceptas nuestros{' '}
-          <a href="/mas/terminos" className="text-blue-600 hover:underline">
+          <Link href="/mas/terminos" className="text-blue-600 hover:underline">
             Términos de Servicio
-          </a>{' '}
+          </Link>{' '}
           y{' '}
-          <a href="/mas/privacidad" className="text-blue-600 hover:underline">
+          <Link href="/mas/privacidad" className="text-blue-600 hover:underline">
             Política de Privacidad
-          </a>
+          </Link>
         </p>
       </div>
     </div>

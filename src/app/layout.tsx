@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import LayoutWrapper from "@/../../components/LayoutWrapper";
+import DynamicBottomMenu from "@/../../components/DynamicBottomMenu";
 import "remixicon/fonts/remixicon.css";
 import "./globals.css";
 
@@ -91,7 +92,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <LayoutWrapper>{children}</LayoutWrapper>
+        <LayoutWrapper bottomMenu={<DynamicBottomMenu />}>
+          {children}
+        </LayoutWrapper>
       </body>
     </html>
   );

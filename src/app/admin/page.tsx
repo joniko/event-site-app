@@ -1,33 +1,32 @@
 import { db } from '@/lib/db';
-import { pages, posts, sessions, stands, tickets, newsletterSubs } from '@/lib/db/schema';
 import { sql } from 'drizzle-orm';
 import { FileText, Calendar, Building2, Ticket, Mail, Layout } from 'lucide-react';
 
+// Revalidate every 60 seconds
+export const revalidate = 60;
+
 async function getMetrics() {
   try {
-    const [
-      pagesCount,
-      postsCount,
-      sessionsCount,
-      standsCount,
-      ticketsCount,
-      newsletterCount,
-    ] = await Promise.all([
-      db.select({ count: sql<number>`count(*)::int` }).from(pages),
-      db.select({ count: sql<number>`count(*)::int` }).from(posts),
-      db.select({ count: sql<number>`count(*)::int` }).from(sessions),
-      db.select({ count: sql<number>`count(*)::int` }).from(stands),
-      db.select({ count: sql<number>`count(*)::int` }).from(tickets),
-      db.select({ count: sql<number>`count(*)::int` }).from(newsletterSubs),
-    ]);
+    // Use a single query instead of 6 separate queries for better performance
+    const result = await db.execute(sql`
+      SELECT
+        (SELECT COUNT(*)::int FROM pages) as pages,
+        (SELECT COUNT(*)::int FROM posts) as posts,
+        (SELECT COUNT(*)::int FROM sessions) as sessions,
+        (SELECT COUNT(*)::int FROM stands) as stands,
+        (SELECT COUNT(*)::int FROM tickets) as tickets,
+        (SELECT COUNT(*)::int FROM newsletter_subs) as newsletter
+    `);
+
+    const counts = result[0] as Record<string, number>;
 
     return {
-      pages: pagesCount[0]?.count || 0,
-      posts: postsCount[0]?.count || 0,
-      sessions: sessionsCount[0]?.count || 0,
-      stands: standsCount[0]?.count || 0,
-      tickets: ticketsCount[0]?.count || 0,
-      newsletter: newsletterCount[0]?.count || 0,
+      pages: counts?.pages || 0,
+      posts: counts?.posts || 0,
+      sessions: counts?.sessions || 0,
+      stands: counts?.stands || 0,
+      tickets: counts?.tickets || 0,
+      newsletter: counts?.newsletter || 0,
     };
   } catch (error) {
     console.error('Error fetching metrics:', error);

@@ -21,7 +21,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, slug, icon, visible, order } = body;
+    const { title, slug, icon, visible, order, blocks } = body;
 
     // Update page
     const [updatedPage] = await db
@@ -32,6 +32,7 @@ export async function PATCH(
         icon,
         visible,
         order,
+        blocks: blocks !== undefined ? blocks : undefined,
         updatedAt: new Date(),
       })
       .where(eq(pages.id, id))

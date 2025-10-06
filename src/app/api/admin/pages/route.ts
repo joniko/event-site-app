@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, slug, type, icon, visible, order } = body;
+    const { title, slug, type, icon, visible, order, blocks } = body;
 
     // Validate required fields
     if (!title || !slug || !type || !icon || order === undefined) {
@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
         visible: visible ?? true,
         order,
         config: {},
+        blocks: blocks || null,
       })
       .returning();
 

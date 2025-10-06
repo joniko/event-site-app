@@ -6,21 +6,11 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
   Layout,
-  FileText,
-  Calendar,
-  Building2,
-  Ticket,
-  Mail,
 } from 'lucide-react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Páginas', href: '/admin/paginas', icon: Layout },
-  { name: 'Posts', href: '/admin/posts', icon: FileText },
-  { name: 'Programa', href: '/admin/programa', icon: Calendar },
-  { name: 'Stands', href: '/admin/stands', icon: Building2 },
-  { name: 'Entradas', href: '/admin/entradas', icon: Ticket },
-  { name: 'Newsletter', href: '/admin/newsletter', icon: Mail },
 ];
 
 interface AdminSidebarProps {
