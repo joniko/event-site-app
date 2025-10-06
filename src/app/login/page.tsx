@@ -15,6 +15,14 @@ export default function LoginPage() {
 
     try {
       await signInWithMagicLink(email);
+      
+      // Check if code_verifier was saved
+      const supabaseKeys = Object.keys(localStorage).filter(k => 
+        k.includes('supabase') || k.includes('pkce') || k.includes('code_verifier')
+      );
+      console.log('✅ Magic link sent. Storage keys:', supabaseKeys);
+      console.log('📧 IMPORTANTE: Haz clic en el link EN ESTE MISMO NAVEGADOR');
+      
       setMessage('¡Revisa tu email! Te enviamos un link mágico para iniciar sesión.');
     } catch (error: any) {
       console.error('Magic link error:', error);
