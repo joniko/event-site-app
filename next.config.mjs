@@ -25,6 +25,10 @@ export default withSerwist({
         protocol: 'https',
         hostname: 'api.fint.app',
       },
+      {
+        protocol: 'https',
+        hostname: 'fint-prod.s3.amazonaws.com',
+      },
     ],
   },
   eslint: {
