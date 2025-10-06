@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db';
 import { pages } from '@/lib/db/schema';
 import { asc } from 'drizzle-orm';
@@ -9,30 +10,41 @@ const DEFAULT_MENU_ITEMS = [
   { name: 'Entradas', href: '/entradas', icon: 'Ticket' },
 ];
 
-export default async function DynamicBottomMenu() {
-  try {
-    // Fetch visible pages from DB ordered by position
-    const visiblePages = await db.query.pages.findMany({
-      where: (pages, { eq }) => eq(pages.visible, true),
-      orderBy: [asc(pages.order)],
-    });
+// Cache the menu data with a tag for on-demand revalidation
+// Revalidate every 60 seconds as fallback
+const getMenuItems = unstable_cache(
+  async () => {
+    try {
+      // Fetch visible pages from DB ordered by position
+      const visiblePages = await db.query.pages.findMany({
+        where: (pages, { eq }) => eq(pages.visible, true),
+        orderBy: [asc(pages.order)],
+      });
 
-    // If no pages found or DB not accessible, use default menu
-    if (!visiblePages || visiblePages.length === 0) {
-      return <BottomMenuClient items={DEFAULT_MENU_ITEMS} />;
+      // If no pages found, return default menu
+      if (!visiblePages || visiblePages.length === 0) {
+        return DEFAULT_MENU_ITEMS;
+      }
+
+      // Map pages to menu items with icons
+      return visiblePages.map((page) => ({
+        name: page.title,
+        href: `/${page.slug}`,
+        icon: page.icon,
+      }));
+    } catch (error) {
+      console.warn('Failed to fetch pages for menu, using defaults:', error);
+      return DEFAULT_MENU_ITEMS;
     }
-
-    // Map pages to menu items with icons
-    const menuItems = visiblePages.map((page) => ({
-      name: page.title,
-      href: `/${page.slug}`,
-      icon: page.icon, // Icon name from DB (e.g., 'Home', 'Calendar')
-    }));
-
-    return <BottomMenuClient items={menuItems} />;
-  } catch (error) {
-    // If DB query fails (e.g., during build), use default menu
-    console.warn('Failed to fetch pages for menu, using defaults:', error);
-    return <BottomMenuClient items={DEFAULT_MENU_ITEMS} />;
+  },
+  ['bottom-menu'],
+  {
+    revalidate: 60, // Revalidate every 60 seconds as fallback
+    tags: ['bottom-menu'],
   }
+);
+
+export default async function DynamicBottomMenu() {
+  const menuItems = await getMenuItems();
+  return <BottomMenuClient items={menuItems} />;
 }

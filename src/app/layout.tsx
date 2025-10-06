@@ -82,9 +82,6 @@ export const viewport: Viewport = {
   themeColor: "#FFFFFF",
 };
 
-// Make layout dynamic to avoid build-time DB queries
-export const dynamic = 'force-dynamic';
-
 export default function RootLayout({
   children,
 }: Readonly<{

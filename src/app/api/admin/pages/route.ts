@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { pages } from '@/lib/db/schema';
 import { isAdminOrEditor } from '@/lib/auth-server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,9 +41,10 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    // Revalidate pages
+    // Revalidate pages and menu
     revalidatePath('/admin/paginas');
     revalidatePath('/'); // Revalidate public navigation
+    revalidateTag('bottom-menu'); // Invalidate menu cache
 
     return NextResponse.json({ ok: true, data: newPage });
   } catch (error) {

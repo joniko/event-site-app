@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { pages } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { isAdminOrEditor } from '@/lib/auth-server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 export async function PATCH(
   request: NextRequest,
@@ -45,9 +45,10 @@ export async function PATCH(
       );
     }
 
-    // Revalidate pages
+    // Revalidate pages and menu
     revalidatePath('/admin/paginas');
     revalidatePath('/'); // Revalidate public navigation
+    revalidateTag('bottom-menu'); // Invalidate menu cache
 
     return NextResponse.json({ ok: true, data: updatedPage });
   } catch (error) {
@@ -94,9 +95,10 @@ export async function DELETE(
     // Delete page
     await db.delete(pages).where(eq(pages.id, id));
 
-    // Revalidate pages
+    // Revalidate pages and menu
     revalidatePath('/admin/paginas');
     revalidatePath('/'); // Revalidate public navigation
+    revalidateTag('bottom-menu'); // Invalidate menu cache
 
     return NextResponse.json({ ok: true });
   } catch (error) {
