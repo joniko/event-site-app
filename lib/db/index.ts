@@ -10,8 +10,6 @@ const client = postgres(connectionString, {
   prepare: false,
   max: 1, // Supabase pooler requires max: 1 for serverless
   ssl: 'require', // Supabase requires SSL
-  idle_timeout: 20,
-  connect_timeout: 10,
 });
 
 // Create drizzle instance
