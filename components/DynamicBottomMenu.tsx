@@ -11,7 +11,7 @@ const DEFAULT_MENU_ITEMS = [
 ];
 
 // Cache the menu data with a tag for on-demand revalidation
-// Revalidate every 60 seconds as fallback
+// Revalidate every 5 minutes as fallback (menu rarely changes during events)
 const getMenuItems = unstable_cache(
   async () => {
     try {
@@ -39,7 +39,7 @@ const getMenuItems = unstable_cache(
   },
   ['bottom-menu'],
   {
-    revalidate: 60, // Revalidate every 60 seconds as fallback
+    revalidate: 300, // Revalidate every 5 minutes as fallback (menu rarely changes)
     tags: ['bottom-menu'],
   }
 );
